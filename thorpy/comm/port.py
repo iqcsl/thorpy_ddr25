@@ -244,6 +244,7 @@ class SingleControllerPort(Port):
         ret = dict([(k, self._stages.get(k, None)) for k in only_chan_idents])
         for k in only_chan_idents:
             if ret[k] is None:
+                # print(self._info_message + '\n\n\n\n\n')
                 ret[k] = GenericStage(self, 0x01, stage_name_from_get_hw_info(self._info_message))
                 self._stages[k] = ret[k]
                 
