@@ -186,8 +186,14 @@ class GenericStage:
         self._state_home_limit_switch = None
         self._state_home_offset_distance = None
         
+        # these 3 variables are set to True whenever the corresponding
+        # message is received from the controller. they can be used by
+        # functions which block execution until the home/move/stop is
+        # completed. they should not be used in isolation to check the
+        # state of the motor
         self.home_completed = None
         self.move_completed = None
+        self.move_stopped = None
         
     def __del__(self):
         print("Destructed: {0!r}".format(self))
@@ -213,6 +219,10 @@ class GenericStage:
         
         if isinstance(msg, MGMSG_MOT_MOVE_HOMED):
             self.home_completed = True
+            return True
+
+        if isinstance(msg, MGMSG_MOT_MOVE_STOPPED):
+            self.move_stopped = True
             return True
         
         if isinstance(msg, MGMSG_MOT_GET_VELPARAMS):
