@@ -186,6 +186,8 @@ class GenericStage:
         self._state_home_limit_switch = None
         self._state_home_offset_distance = None
         
+        self.home_completed = None
+        self.move_completed = None
         
     def __del__(self):
         print("Destructed: {0!r}".format(self))
@@ -194,6 +196,10 @@ class GenericStage:
         if self._last_ack_sent < time.time() - 0.5:
             self._port.send_message(MGMSG_MOT_ACK_DCSTATUSUPDATE())
             self._last_ack_sent = time.time()
+
+        if isinstance(msg, MGMSG_MOT_MOVE_COMPLETED):
+            self.move_completed = True
+            # don't return yet as this case is dealt with again below
             
         if isinstance(msg, MGMSG_MOT_GET_DCSTATUSUPDATE) or \
            isinstance(msg, MGMSG_MOT_GET_STATUSUPDATE) or \
@@ -206,6 +212,7 @@ class GenericStage:
             return True
         
         if isinstance(msg, MGMSG_MOT_MOVE_HOMED):
+            self.home_completed = True
             return True
         
         if isinstance(msg, MGMSG_MOT_GET_VELPARAMS):
