@@ -186,6 +186,14 @@ class GenericStage:
         self._state_home_limit_switch = None
         self._state_home_offset_distance = None
         
+        # JOGPARAMS
+        self._jog_mode = None
+        self._jog_step_size = None
+        self._jog_min_velocity = None
+        self._jog_acceleration = None
+        self._jog_max_velocity = None
+        self._jog_stop_mode = None
+
         # these 3 variables are set to True whenever the corresponding
         # message is received from the controller. they can be used by
         # functions which block execution until the home/move/stop is
@@ -229,6 +237,15 @@ class GenericStage:
             self._state_min_velocity = msg['min_velocity']
             self._state_max_velocity = msg['max_velocity']
             self._state_acceleration = msg['acceleration']
+            return True
+
+        if isinstance(msg, MGMSG_MOT_GET_JOGPARAMS):
+            self._jog_mode = msg['jog_mode']
+            self._jog_step_size = msg['jog_step_size']
+            self._jog_min_velocity = msg['jog_min_velocity']
+            self._jog_acceleration = msg['jog_acceleration']
+            self._jog_max_velocity = msg['jog_max_velocity']
+            self._jog_stop_mode = msg['jog_stop_mode']
             return True
         
         if isinstance(msg, MGMSG_MOT_GET_HOMEPARAMS):
@@ -325,6 +342,36 @@ class GenericStage:
         return (self._state_status_bits & 0x80000000) != 0
     
     #VELPARAMS
+
+    @property
+    def jog_mode(self):
+        self._wait_for_properties(('_jog_mode',), timeout=3, message = MGMSG_MOT_REQ_JOGPARAMS(chan_ident = self._chan_ident))
+        return self._jog_mode
+
+    @property
+    def jog_step_size(self):
+        self._wait_for_properties(('_jog_step_size',), timeout=3, message = MGMSG_MOT_REQ_JOGPARAMS(chan_ident = self._chan_ident))
+        return self._jog_step_size / (self._EncCnt * self._T * 65536)
+
+    @property
+    def jog_min_velocity(self):
+        self._wait_for_properties(('_jog_min_velocity',), timeout=3, message = MGMSG_MOT_REQ_JOGPARAMS(chan_ident = self._chan_ident))
+        return self._jog_min_velocity / (self._EncCnt * self._T * 65536)
+    
+    @property
+    def jog_acceleration(self):
+        self._wait_for_properties(('_jog_acceleration',), timeout=3, message = MGMSG_MOT_REQ_JOGPARAMS(chan_ident = self._chan_ident))
+        return self._jog_acceleration / (self._EncCnt * (self._T ** 2) * 65536)
+    
+    @property
+    def jog_max_velocity(self):
+        self._wait_for_properties(('_jog_max_velocity',), timeout=3, message = MGMSG_MOT_REQ_JOGPARAMS(chan_ident = self._chan_ident))
+        return self._jog_max_velocity / (self._EncCnt * self._T * 65536)
+    
+    @property
+    def jog_stop_mode(self):
+        self._wait_for_properties(('_jog_stop_mode',), timeout=3, message = MGMSG_MOT_REQ_JOGPARAMS(chan_ident = self._chan_ident))
+        return self._jog_stop_mode
     
     @property
     def min_velocity(self):
