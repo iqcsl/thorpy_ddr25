@@ -193,6 +193,8 @@ class GenericStage:
         self._jog_acceleration = None
         self._jog_max_velocity = None
         self._jog_stop_mode = None
+        
+        self._T_value = None
 
         # these 3 variables are set to True whenever the corresponding
         # message is received from the controller. they can be used by
@@ -341,7 +343,7 @@ class GenericStage:
         self._wait_for_properties(('_state_status_bits', ), timeout = 3, message = MGMSG_MOT_REQ_DCSTATUSUPDATE(chan_ident = self._chan_ident))
         return (self._state_status_bits & 0x80000000) != 0
     
-    #VELPARAMS
+    # VELPARAMS
 
     @property
     def jog_mode(self):
@@ -351,7 +353,7 @@ class GenericStage:
     @property
     def jog_step_size(self):
         self._wait_for_properties(('_jog_step_size',), timeout=3, message = MGMSG_MOT_REQ_JOGPARAMS(chan_ident = self._chan_ident))
-        return self._jog_step_size / (self._EncCnt * self._T * 65536)
+        return self._jog_step_size
 
     @property
     def jog_min_velocity(self):
@@ -372,7 +374,52 @@ class GenericStage:
     def jog_stop_mode(self):
         self._wait_for_properties(('_jog_stop_mode',), timeout=3, message = MGMSG_MOT_REQ_JOGPARAMS(chan_ident = self._chan_ident))
         return self._jog_stop_mode
+
+    @jog_mode.setter
+    def jog_mode(self, new_value):
+        self._set_jogparams(new_value, self.jog_step_size, self.jog_min_velocity, self.jog_acceleration, self.jog_max_velocity, self.jog_stop_mode)
+
+    @jog_step_size.setter
+    def jog_step_size(self, new_value):
+        self._set_jogparams(self.jog_mode, new_value, self.jog_min_velocity, self.jog_acceleration, self.jog_max_velocity, self.jog_stop_mode)
+
+    @jog_min_velocity.setter
+    def jog_min_velocity(self, new_value):
+        self._set_jogparams(self.jog_mode, self.jog_step_size, float(new_value), self.jog_acceleration, self.jog_max_velocity, self.jog_stop_mode)
+
+    @jog_max_velocity.setter
+    def jog_max_velocity(self, new_value):
+        self._set_jogparams(self.jog_mode, self.jog_step_size, self.jog_min_velocity, self.jog_acceleration, float(new_value), self.jog_stop_mode)
+
+    @jog_acceleration.setter
+    def jog_acceleration(self, new_value):
+        self._set_jogparams(self.jog_mode, self.jog_step_size, self.jog_min_velocity, float(new_value), self.jog_max_velocity, self.jog_stop_mode)
+
+    @jog_stop_mode.setter
+    def jog_stop_mode(self, new_value):
+        self._set_jogparams(self.jog_mode, self.jog_step_size, self.jog_min_velocity, self.jog_acceleration, self.jog_max_velocity, new_value)
+
+    def _set_jogparams(self, jog_mode, jog_step_size, jog_min_velocity, jog_acceleration, jog_max_velocity, jog_stop_mode):
+        msg = MGMSG_MOT_SET_JOGPARAMS(
+            chan_ident = self._chan_ident,
+            jog_mode = jog_mode,
+            jog_step_size = int(jog_step_size),
+            jog_acceleration = int(jog_acceleration *(self._EncCnt * (self._T ** 2) * 65536)),
+            jog_min_velocity = int(jog_min_velocity *(self._EncCnt * self._T * 65536)),
+            jog_max_velocity = int(jog_max_velocity *(self._EncCnt * self._T * 65536)),
+            jog_stop_mode = int(jog_stop_mode),
+        )
+        self._port.send_message(msg)
+        #Invalidate current values
+        self._jog_mode = None
+        self._jog_step_size = None
+        self._jog_min_velocity = None
+        self._jog_acceleration = None
+        self._jog_max_velocity = None
+        self._jog_stop_mode = None
     
+    #VELPARAMS
+
     @property
     def min_velocity(self):
         self._wait_for_properties(('_state_min_velocity', ), timeout = 3, message = MGMSG_MOT_REQ_VELPARAMS(chan_ident = self._chan_ident))
@@ -463,6 +510,8 @@ class GenericStage:
     
     @property
     def _T(self):
+        if self._T_value != None:
+            return self._T_value
         return 2048 / 6e6
     
     @property
