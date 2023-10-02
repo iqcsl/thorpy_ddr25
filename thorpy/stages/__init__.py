@@ -207,6 +207,7 @@ class GenericStage:
         
     def __del__(self):
         print("Destructed: {0!r}".format(self))
+        #del self._port
         
     def _handle_message(self, msg):
         if self._last_ack_sent < time.time() - 0.5:

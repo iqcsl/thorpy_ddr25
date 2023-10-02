@@ -12,6 +12,7 @@ class Port:
     
     def __init__(self, port, sn):
         super().__init__()
+        self.active = True
         self._lock = threading.RLock()
         self._lock.acquire()
         self._buffer = b''
@@ -80,6 +81,7 @@ class Port:
 
     def __del__(self):
         print("Destructed: {0!r}".format(self))
+        self.active = False
         self._thread_worker.join()
             
     def send_message(self, msg):
@@ -95,7 +97,7 @@ class Port:
             timeout = 1
             self._thread_worker_initialized.set()
             
-            while self._thread_main.is_alive():
+            while self._thread_main.is_alive() and self.active:
                 #Trick to avoid holding lock
                 r, w, e = select.select([self._serial], [], [], timeout)
                 msg = self._recv_message(False)
