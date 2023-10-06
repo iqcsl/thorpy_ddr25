@@ -274,6 +274,11 @@ class GenericStage:
         absolute_distance = int(new_value * self._EncCnt)
         self._port.send_message(MGMSG_MOT_MOVE_ABSOLUTE_long(chan_ident = self._chan_ident, absolute_distance = absolute_distance))
 
+    def moveby(self, amt):
+        assert type(amt) in (float, int)
+        reldist = int(amt * self._EncCnt)
+        self._port.send_message(MGMSG_MOT_MOVE_RELATIVE_long(chan_ident = self._chan_ident, relative_distance = reldist)
+
     @property
     def velocity(self):
         self._wait_for_properties(('_state_velocity', ), timeout = 3, message = MGMSG_MOT_REQ_DCSTATUSUPDATE(chan_ident = self._chan_ident))
