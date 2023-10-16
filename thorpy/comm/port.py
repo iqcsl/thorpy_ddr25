@@ -22,7 +22,10 @@ class Port:
                                      bytesize=serial.EIGHTBITS,
                                      parity=serial.PARITY_NONE,
                                      stopbits=serial.STOPBITS_ONE,
-                                     rtscts=True)
+                                     rtscts=True, exclusive=True)
+        #if not self._serial.is_open:
+        #    print(f'Could not open serial port {port} in exclusive mode')
+        #    raise Exception
 
         # The Thorlabs protocol description recommends toggeling the RTS pin and resetting the
         # input and output buffer. This makes sense, since the internal controller of the Thorlabs
@@ -82,7 +85,10 @@ class Port:
     def __del__(self):
         print("Destructed: {0!r}".format(self))
         self.active = False
-        self._thread_worker.join()
+        try:
+            self._thread_worker.join()
+        except AttributeError:
+            pass
             
     def send_message(self, msg):
         with self._lock:
@@ -174,7 +180,9 @@ class Port:
         return False
     
     def __repr__(self):
-        return '{0}({1!r},{2!r})'.format(self.__class__.__name__, self._port, self._serial_number)
+        port = self._port if hasattr(self, '_port') else 'PORT UNKNOWN'
+        sn = self._serial_number if hasattr(self, '_serial_number') else 'SERIAL NUMBER UNKNOWN'
+        return '{0}({1!r},{2!r})'.format(self.__class__.__name__, port, sn)
     
     def get_stages(self, only_chan_idents = None):
         return {}
