@@ -22,8 +22,7 @@ class Port:
                                      bytesize=serial.EIGHTBITS,
                                      parity=serial.PARITY_NONE,
                                      stopbits=serial.STOPBITS_ONE,
-                                     rtscts=True, exclusive=True,
-                                     timeout=5, write_timeout=5)
+                                     rtscts=True, exclusive=True)
         #if not self._serial.is_open:
         #    print(f'Could not open serial port {port} in exclusive mode')
         #    raise Exception
@@ -52,12 +51,8 @@ class Port:
         time.sleep(0.5)
         self._serial.reset_input_buffer()
 
-        c = 0
         self._info_message = None
         while self._info_message is None:
-            c += 1
-            if c > 1000:
-                raise Exception('Could not get info from motor')
             self.send_message(MGMSG_HW_REQ_INFO())
             try:
                 self._info_message = self._recv_message(blocking = True)
