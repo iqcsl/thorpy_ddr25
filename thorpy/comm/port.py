@@ -60,7 +60,7 @@ class Port:
                 raise Exception('Could not get info from motor')
             self.send_message(MGMSG_HW_REQ_INFO())
             try:
-                self._info_message = self._recv_message(blocking = True, timeout=5)
+                self._info_message = self._recv_message(blocking = True)
             except: # TODO: Be more specific on what we catch here
                 self._buffer = b''
                 self._serial.flushInput()
