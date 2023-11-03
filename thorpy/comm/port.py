@@ -22,7 +22,8 @@ class Port:
                                      bytesize=serial.EIGHTBITS,
                                      parity=serial.PARITY_NONE,
                                      stopbits=serial.STOPBITS_ONE,
-                                     rtscts=True, exclusive=True)
+                                     rtscts=True, exclusive=True,
+                                     timeout=5)
         #if not self._serial.is_open:
         #    print(f'Could not open serial port {port} in exclusive mode')
         #    raise Exception
