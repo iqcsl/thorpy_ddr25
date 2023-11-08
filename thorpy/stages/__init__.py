@@ -599,7 +599,11 @@ class GenericStage:
         return True
         
     def __repr__(self):
-        return '<{0} on {1!r} channel {2}>'.format(self._name, self._port, self._chan_ident)
+        try:
+            name = self._name
+        except:
+            name = 'UNKNOWN'
+        return '<{0} on {1!r} channel {2}>'.format(name, self._port, self._chan_ident)
         
 
 #Message which should maybe be implemented?
