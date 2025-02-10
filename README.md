@@ -1,3 +1,5 @@
+This repository has been archived.
+
 `thorpy-ddr25` is a fork of `thorpy` which adds support for the Thorlabs DDR25 rotation stage as well as KBD101 controller, plus a few other things.
 
 # Thorpy
